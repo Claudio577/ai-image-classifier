@@ -4,7 +4,11 @@ import numpy as np
 from PIL import Image
 
 # carregar modelo
-model = tf.keras.models.load_model("model/cifar10_model.keras")
+@st.cache_resource
+def load_model():
+    return tf.keras.models.load_model("model/cifar10_model.keras")
+
+model = load_model()
 
 class_names = [
 'airplane','automobile','bird','cat','deer',
