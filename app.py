@@ -2,6 +2,7 @@ import streamlit as st
 import tensorflow as tf
 import numpy as np
 from PIL import Image
+import pandas as pd
 
 @st.cache_resource
 def load_model():
@@ -16,12 +17,15 @@ class_names = [
 
 st.title("AI Image Classifier - CIFAR10")
 
-uploaded_file = st.file_uploader("Upload Image")
+st.write("Upload an image and the AI will classify it.")
+
+uploaded_file = st.file_uploader("Upload Image", type=["jpg","png","jpeg"])
 
 if uploaded_file is not None:
 
     image = Image.open(uploaded_file).resize((32,32))
-    st.image(image)
+
+    st.image(image, caption="Uploaded Image")
 
     img_array = np.array(image)/255.0
     img_array = np.expand_dims(img_array, axis=0)
@@ -30,9 +34,16 @@ if uploaded_file is not None:
 
     predicted_class = class_names[np.argmax(prediction)]
 
-    st.write("Prediction:", predicted_class)
-    prediction = model.predict(img_array)
+    st.subheader("Prediction")
+    st.write(predicted_class)
 
-    predicted_class = class_names[np.argmax(prediction)]
+    probabilities = tf.nn.softmax(prediction[0])
 
-    st.write("Prediction:", predicted_class)
+    df = pd.DataFrame({
+        "Class": class_names,
+        "Probability": probabilities.numpy()
+    })
+
+    st.subheader("Class Probabilities")
+
+    st.bar_chart(df.set_index("Class"))
